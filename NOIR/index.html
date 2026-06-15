@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Noir — Activewear Recommendation</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ░░ NOISE OVERLAY ░░ -->
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <!-- ░░ NAVIGATION ░░ -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-mark">N</span>
+        <span class="logo-text">NOIR</span>
+      </a>
+
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="pages/quiz.html" class="nav-link">
+          <span class="nav-num">01</span> Quiz
+        </a></li>
+        <li><a href="pages/spec-checker.html" class="nav-link">
+          <span class="nav-num">02</span> Spec Checker
+        </a></li>
+        <li><a href="pages/material-guide.html" class="nav-link">
+          <span class="nav-num">03</span> Material Guide
+        </a></li>
+        <li><a href="pages/learning-hub.html" class="nav-link">
+          <span class="nav-num">04</span> Learning Hub
+        </a></li>
+        <li><a href="pages/recommendations.html" class="nav-cta">
+          Recommendations →
+        </a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ░░ HERO ░░ -->
+  <header class="hero">
+    <div class="hero-tag">
+      <span class="dot"></span> Activewear Recommendation · Tropical Climate
+    </div>
+
+    <h1 class="hero-title">
+      Find Your Fit,<br />
+      <em>In 6 Questions</em><br />
+    </h1>
+
+    <p class="hero-sub">
+      Temukan activewear yang paling cocok untuk tubuh, aktivitas, dan iklim tropismu — tanpa perlu jadi ahli tekstil dulu.
+    </p>
+
+    <div class="hero-actions">
+      <a href="pages/quiz.html" class="btn-primary">Take the Quiz →</a>
+      <a href="pages/recommendations.html" class="btn-ghost">Browse Picks</a>
+    </div>
+
+    <div class="hero-stat-row" aria-label="Platform highlights">
+      <div class="hero-stat">
+        <span class="stat-num">6</span>
+        <span class="stat-label">Pertanyaan Singkat</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-num">12+</span>
+        <span class="stat-label">Jenis Material</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-num">100%</span>
+        <span class="stat-label">Transparansi Data</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ░░ MARQUEE BAND ░░ -->
+  <div class="marquee-band" aria-hidden="true">
+    <div class="marquee-track">
+      <span>Polyester</span><span>·</span>
+      <span>Nylon</span><span>·</span>
+      <span>Bamboo Fiber</span><span>·</span>
+      <span>Merino Wool</span><span>·</span>
+      <span>Spandex</span><span>·</span>
+      <span>Modal</span><span>·</span>
+      <span>Tencel</span><span>·</span>
+      <span>Recycled PET</span><span>·</span>
+      <span>Polyester</span><span>·</span>
+      <span>Nylon</span><span>·</span>
+      <span>Bamboo Fiber</span><span>·</span>
+      <span>Merino Wool</span><span>·</span>
+      <span>Spandex</span><span>·</span>
+      <span>Modal</span><span>·</span>
+      <span>Tencel</span><span>·</span>
+      <span>Recycled PET</span><span>·</span>
+    </div>
+  </div>
+
+  <!-- ░░ HOW IT WORKS ░░ -->
+  <section class="features" id="features">
+    <div class="section-header">
+      <p class="section-tag">How It Works</p>
+      <h2 class="section-title">Dari jawaban<br /><em>ke rekomendasi</em></h2>
+    </div>
+
+    <div class="features-grid">
+
+      <a href="pages/quiz.html" class="feature-card card-quiz">
+        <div class="card-num">01</div>
+        <div class="card-icon">🧩</div>
+        <h3 class="card-title">Recommendation Quiz</h3>
+        <p class="card-desc">
+          Jawab 6 pertanyaan tentang aktivitas, tingkat keringat, dan prioritasmu
+          — dapatkan rekomendasi material yang paling sesuai.
+        </p>
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a href="pages/recommendations.html" class="feature-card card-rec">
+        <div class="card-num">02</div>
+        <div class="card-icon">✦</div>
+        <h3 class="card-title">Curated Picks</h3>
+        <p class="card-desc">
+          Pilihan activewear yang sudah dikurasi berdasarkan tipe material,
+          lengkap dengan breakdown spesifikasi tiap produk.
+        </p>
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a href="pages/spec-checker.html" class="feature-card card-spec">
+        <div class="card-num">03</div>
+        <div class="card-icon">⚙️</div>
+        <h3 class="card-title">Spec Checker</h3>
+        <p class="card-desc">
+          Punya baju dan penasaran sama labelnya? Masukkan komposisi bahannya,
+          dan lihat breakdown performa yang jelas.
+        </p>
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a href="pages/material-guide.html" class="feature-card card-material">
+        <div class="card-num">04</div>
+        <div class="card-icon">🧵</div>
+        <h3 class="card-title">Material Guide</h3>
+        <p class="card-desc">
+          Referensi lengkap tiap jenis bahan — breathability, moisture-wicking,
+          odor resistance, hingga dampak lingkungan.
+        </p>
+        <span class="card-arrow">→</span>
+      </a>
+
+      <a href="pages/learning-hub.html" class="feature-card card-learning">
+        <div class="card-num">05</div>
+        <div class="card-icon">📖</div>
+        <h3 class="card-title">Learning Hub</h3>
+        <p class="card-desc">
+          Mau lebih dalam? Pelajari dasar activewear — dari kualitas bahan,
+          kebutuhan fisik, hingga pengaruh lingkungan tropis.
+        </p>
+        <span class="card-arrow">→</span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ░░ WHY NOIR ░░ -->
+  <section class="why-section">
+    <div class="why-inner">
+      <div class="why-text">
+        <p class="section-tag">The Problem</p>
+        <h2 class="section-title">"Bahannya sekian persen!"<br /><em>Yakin ngerti?</em></h2>
+        <p class="why-body">
+          Banyak pembeli yang tidak sadar bahwa kenyamanan dari pakaian tidak hanya ditentukan oleh bahan,
+          namun juga oleh kondisi fisik dan lingkungan. Quiz kami membantu kamu menemukan jawabannya — tanpa perlu riset sendiri.
+        </p>
+        <a href="pages/quiz.html" class="btn-primary">Find My Fit →</a>
+      </div>
+      <div class="why-visual">
+        <div class="label-card">
+          <div class="label-top">FABRIC COMPOSITION</div>
+          <div class="label-row">
+            <span class="label-material">Polyester</span>
+            <span class="label-pct">88%</span>
+          </div>
+          <div class="label-row">
+            <span class="label-material">Elastane</span>
+            <span class="label-pct">12%</span>
+          </div>
+          <div class="label-divider"></div>
+          <div class="label-decoded">
+            <div class="decode-item good">
+              <span class="decode-dot"></span> High moisture-wicking
+            </div>
+            <div class="decode-item good">
+              <span class="decode-dot"></span> 4-way stretch
+            </div>
+            <div class="decode-item warn">
+              <span class="decode-dot warn"></span> Moderate breathability
+            </div>
+            <div class="decode-item bad">
+              <span class="decode-dot bad"></span> Retains heat in direct sun
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ░░ FOOTER ░░ -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo-mark">N</span>
+        <span class="logo-text">NOIR</span>
+        <p class="footer-tagline">Activewear Intelligence for the Tropics</p>
+      </div>
+      <div class="footer-links">
+        <a href="pages/quiz.html">Quiz</a>
+        <a href="pages/recommendations.html">Recommendations</a>
+        <a href="pages/spec-checker.html">Spec Checker</a>
+        <a href="pages/material-guide.html">Material Guide</a>
+        <a href="pages/learning-hub.html">Learning Hub</a>
+      </div>
+      <p class="footer-note">
+        Curated by Noir Team · Recommendation by Community
+      </p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recommendation Quiz — Noir</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">
+        <span class="logo-mark">N</span>
+        <span class="logo-text">NOIR</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="learning-hub.html"    class="nav-link"><span class="nav-num">01</span> Learning Hub</a></li>
+        <li><a href="material-guide.html"  class="nav-link"><span class="nav-num">02</span> Material Guide</a></li>
+        <li><a href="spec-checker.html"    class="nav-link"><span class="nav-num">03</span> Spec Checker</a></li>
+        <li><a href="quiz.html"            class="nav-link"><span class="nav-num">04</span> Quiz</a></li>
+        <li><a href="recommendations.html" class="nav-cta">Recommendations →</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="page-shell">
+    <div class="page-hero">
+      <p class="page-hero-tag">Module 04</p>
+      <h1 class="page-title">Find Your <em>Fabric</em></h1>
+      <p class="page-subtitle">
+        Answer 6 questions about your activity, environment, and priorities
+        to get a personalised fabric recommendation.
+      </p>
+    </div>
+
+    <div class="page-body">
+      <div class="quiz-wrap">
+
+        <!-- Progress Bar -->
+        <div class="quiz-progress-bar">
+          <div class="quiz-progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+
+        <!-- Questions (rendered by JS) -->
+        <div id="quizSteps"></div>
+
+        <!-- Result (hidden until quiz complete) -->
+        <div class="quiz-result" id="quizResult">
+          <p class="quiz-q-num">Your Result</p>
+          <div class="result-fabric-name" id="resultFabric"></div>
+          <p class="result-explanation" id="resultExplanation"></p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+            <a href="material-guide.html" class="btn-primary">See all materials →</a>
+            <button class="btn-ghost" id="retakeBtn">Retake quiz</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script>
+    /* ── Quiz Data ── */
+    const questions = [
+      {
+        id: 'activity',
+        question: 'What is your primary outdoor activity?',
+        options: [
+          { label: 'Running / Jogging',       value: 'run'    },
+          { label: 'Hiking / Trekking',        value: 'hike'   },
+          { label: 'Cycling',                  value: 'cycle'  },
+          { label: 'Yoga / Light movement',    value: 'yoga'   },
+        ]
+      },
+      {
+        id: 'sweat',
+        question: 'How heavily do you typically sweat?',
+        options: [
+          { label: 'Light — barely noticeable', value: 'low'  },
+          { label: 'Moderate — damp after 30 min', value: 'mid' },
+          { label: 'Heavy — soaked fairly quickly', value: 'high' },
+        ]
+      },
+      {
+        id: 'duration',
+        question: 'How long are your outdoor sessions?',
+        options: [
+          { label: 'Under 30 minutes',          value: 'short'  },
+          { label: '30 min – 2 hours',          value: 'medium' },
+          { label: 'More than 2 hours',         value: 'long'   },
+        ]
+      },
+      {
+        id: 'priority',
+        question: 'What is your #1 priority in activewear?',
+        options: [
+          { label: 'Staying cool and dry',      value: 'cool'   },
+          { label: 'No odour after activity',   value: 'odor'   },
+          { label: 'Maximum stretch & comfort', value: 'stretch'},
+          { label: 'Eco-friendliness',          value: 'eco'    },
+        ]
+      },
+      {
+        id: 'sun',
+        question: 'How much direct sun exposure do you get?',
+        options: [
+          { label: 'Mostly shaded',             value: 'low'    },
+          { label: 'Partial sun',               value: 'mid'    },
+          { label: 'Full sun for most sessions',value: 'high'   },
+        ]
+      },
+      {
+        id: 'budget',
+        question: 'How do you feel about premium-priced fabrics?',
+        options: [
+          { label: 'Happy to invest for quality', value: 'premium' },
+          { label: 'Prefer mid-range options',    value: 'mid'     },
+          { label: 'Looking for budget-friendly', value: 'budget'  },
+        ]
+      },
+    ];
+
+    /* ── Scoring Rules → fabric recommendation ──
+       Simple scoring: each answer gives points to one or more fabrics.
+       Fabric with highest score wins.
+    */
+    const scoring = {
+      // activity
+      run:     { polyester: 3, nylon: 2, bamboo: 1 },
+      hike:    { nylon: 3, polyester: 2, merino: 2 },
+      cycle:   { polyester: 3, spandex: 2, nylon: 1 },
+      yoga:    { bamboo: 3, modal: 3, tencel: 2 },
+      // sweat
+      low:     { bamboo: 2, modal: 2, tencel: 2 },
+      mid:     { polyester: 2, nylon: 2 },
+      high:    { polyester: 3, nylon: 3 },
+      // duration
+      short:   { bamboo: 2, modal: 1 },
+      medium:  { polyester: 2, nylon: 2 },
+      long:    { merino: 3, nylon: 2, polyester: 1 },
+      // priority
+      cool:    { bamboo: 3, tencel: 3, nylon: 2 },
+      odor:    { merino: 4, bamboo: 2 },
+      stretch: { spandex: 4, polyester: 1, nylon: 1 },
+      eco:     { tencel: 4, bamboo: 3, recycled: 3 },
+      // sun
+      // low sun: breathable naturals
+      // high sun: look for UPF-rated polyester/nylon
+      // (uses 'low','mid','high' keys already defined above for sweat — extend uniquely)
+      // budget
+      premium: { merino: 2, tencel: 1, bamboo: 1 },
+      budget:  { polyester: 2, nylon: 1 },
+    };
+
+    /* Sun uses a different key to avoid collision */
+    const sunScoring = {
+      low:  { bamboo: 2, modal: 2 },
+      mid:  { polyester: 1, nylon: 1, bamboo: 1 },
+      high: { polyester: 3, nylon: 3 },
+    };
+
+    const fabricResults = {
+      polyester: {
+        name: 'Polyester',
+        explanation: "Your activity pattern and sweat level call for a high-performance synthetic. Polyester's moisture-wicking speed and quick-drying properties make it ideal for the tropical heat. Pair it with a small percentage of spandex (8–12%) for comfort.",
+      },
+      nylon: {
+        name: 'Nylon',
+        explanation: "Nylon offers the perfect balance of lightweight performance and durability for your sessions. It's slightly softer than polyester, resists abrasion well, and dries fast — great for extended tropical outdoor activities.",
+      },
+      bamboo: {
+        name: 'Bamboo Fiber',
+        explanation: "Bamboo fiber scores high on breathability and natural antibacterial properties, making it excellent for tropical climates. It's softer against skin than synthetics and a great eco-conscious choice for moderate-intensity use.",
+      },
+      merino: {
+        name: 'Merino Wool',
+        explanation: "Your priority on odour resistance and longer session duration makes Merino a surprising but strong fit. Despite being wool, fine Merino breathes well and prevents odour far longer than synthetics — worth the investment for multi-hour activities",
+      },
+      modal: {
+        name: 'Modal',
+        explanation: "For your low-intensity, comfort-first approach, Modal delivers exceptional softness and breathability. It's derived from beechwood and feels luxuriously silky, making it ideal for yoga, stretching, and everyday active use.",
+      },
+      tencel: {
+        name: 'Tencel (Lyocell)',
+        explanation: "Tencel is your match if eco-credentials meet performance needs. Made from sustainably sourced wood pulp via a closed-loop process, it's breathable, moisture-absorbing, and impressively soft — a great everyday active fabric.",
+      },
+      spandex: {
+        name: 'Spandex Blend',
+        explanation: "Maximum stretch is your priority, so look for garments with at least 15–20% spandex blended into polyester or nylon. Pure spandex isn't used alone — but a 80/20 or 88/12 poly-spandex blend gives you 4-way freedom of movement.",
+      },
+      recycled: {
+        name: 'Recycled PET',
+        explanation: "Your eco-first mindset pairs well with Recycled PET (rPET) — fabric made from post-consumer plastic bottles. Performance is comparable to virgin polyester, so you don't sacrifice moisture-wicking or dry time while reducing environmental impact.",
+      },
+    };
+
+    /* ── Quiz State ── */
+    let currentStep = 0;
+    const answers = {};
+
+    /* ── Render questions ── */
+    function renderQuiz() {
+      const container = document.getElementById('quizSteps');
+      container.innerHTML = questions.map((q, i) => `
+        <div class="quiz-step${i === 0 ? ' active' : ''}" id="step-${i}">
+          <p class="quiz-q-num">Question ${i + 1} of ${questions.length}</p>
+          <h2 class="quiz-question">${q.question}</h2>
+          <div class="quiz-options">
+            ${q.options.map((opt, j) => `
+              <button
+                class="quiz-option"
+                data-step="${i}"
+                data-qid="${q.id}"
+                data-value="${opt.value}"
+                onclick="selectOption(this)"
+              >
+                <span class="quiz-opt-letter">${String.fromCharCode(65 + j)}</span>
+                ${opt.label}
+              </button>
+            `).join('')}
+          </div>
+          <div class="quiz-nav">
+            ${i > 0
+              ? `<button class="btn-ghost" onclick="prevStep()">← Back</button>`
+              : `<span></span>`
+            }
+            <button class="btn-primary" id="next-${i}" onclick="nextStep()" disabled style="opacity:0.4;cursor:not-allowed">
+              ${i < questions.length - 1 ? 'Next →' : 'See Result →'}
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectOption(btn) {
+      const step = parseInt(btn.dataset.step);
+      // Deselect siblings
+      document.querySelectorAll(`[data-step="${step}"]`).forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      answers[btn.dataset.qid] = btn.dataset.value;
+      // Enable next button
+      const nextBtn = document.getElementById(`next-${step}`);
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+      nextBtn.style.cursor = 'pointer';
+    }
+
+    function nextStep() {
+      document.getElementById(`step-${currentStep}`).classList.remove('active');
+      currentStep++;
+      if (currentStep >= questions.length) {
+        showResult();
+        return;
+      }
+      document.getElementById(`step-${currentStep}`).classList.add('active');
+      updateProgress();
+    }
+
+    function prevStep() {
+      document.getElementById(`step-${currentStep}`).classList.remove('active');
+      currentStep--;
+      document.getElementById(`step-${currentStep}`).classList.add('active');
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const pct = (currentStep / questions.length) * 100;
+      document.getElementById('progressFill').style.width = pct + '%';
+    }
+
+    function showResult() {
+      // Tally scores
+      const scores = {};
+      Object.entries(answers).forEach(([qid, val]) => {
+        let map = scoring[val] || {};
+
+        // Special case: sun question has its own map
+        if (qid === 'sun') map = sunScoring[val] || {};
+
+        Object.entries(map).forEach(([fabric, pts]) => {
+          scores[fabric] = (scores[fabric] || 0) + pts;
+        });
+      });
+
+      // Find winner
+      const winner = Object.entries(scores).sort((a, b) => b[1] - a[1])[0]?.[0] || 'polyester';
+      const result  = fabricResults[winner] || fabricResults.polyester;
+
+      document.getElementById('resultFabric').textContent       = result.name;
+      document.getElementById('resultExplanation').textContent  = result.explanation;
+
+      document.getElementById('quizSteps').style.display  = 'none';
+      document.getElementById('progressFill').style.width = '100%';
+      document.getElementById('quizResult').classList.add('visible');
+    }
+
+    document.getElementById('retakeBtn')?.addEventListener('click', () => {
+      currentStep = 0;
+      Object.keys(answers).forEach(k => delete answers[k]);
+      document.getElementById('quizResult').classList.remove('visible');
+      document.getElementById('quizSteps').style.display = '';
+      renderQuiz();
+      updateProgress();
+    });
+
+    /* ── Init ── */
+    renderQuiz();
+  </script>
+</body>
+</html>

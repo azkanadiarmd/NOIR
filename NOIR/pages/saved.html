@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saved — Noir</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║  NAVBAR  (same structure as recommendations.html)        ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+    <a href="../index.html" class="nav-logo">
+      <span class="logo-mark">N</span>
+      <span class="logo-text">NOIR</span>
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="learning-hub.html"   class="nav-link"><span class="nav-num">01</span> Learning Hub</a></li>
+      <li><a href="material-guide.html" class="nav-link"><span class="nav-num">02</span> Material Guide</a></li>
+      <li><a href="spec-checker.html"   class="nav-link"><span class="nav-num">03</span> Spec Checker</a></li>
+      <li><a href="quiz.html"           class="nav-link"><span class="nav-num">04</span> Quiz</a></li>
+    </ul>
+    <div class="nav-auth" id="navAuthZone"></div>
+  </div>
+</nav>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║  AUTH WALL — shown when user is not signed in            ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<div class="auth-wall hidden" id="authWall">
+  <div class="auth-wall-inner">
+    <div class="auth-wall-icon">🔖</div>
+    <h2 class="auth-wall-title">Your saved products</h2>
+    <p class="auth-wall-sub">
+      Sign in to see the products you've saved and the
+      suggestions you've submitted to the Noir team.
+    </p>
+    <button class="auth-submit-btn" id="wallSignInBtn"
+            style="max-width:200px;margin:0 auto">
+      Sign In
+    </button>
+    <p class="auth-footer-text" style="margin-top:12px">
+      No account?
+      <span class="auth-switch-link" id="wallSignUpBtn">Create one →</span>
+    </p>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║  MAIN CONTENT — shown when authenticated                 ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<main class="page-shell hidden" id="mainContent">
+
+  <!-- Page hero: greeting personalised with user's name -->
+  <div class="page-hero saved-page-hero">
+    <p class="page-hero-tag">Your Collection</p>
+    <h1 class="page-title" id="savedPageTitle">Saved <em>Products</em></h1>
+    <p class="page-subtitle" id="savedPageSub"></p>
+  </div>
+
+  <div class="page-body saved-page-body">
+
+    <!-- ── SAVED PRODUCTS ── -->
+    <section class="saved-section">
+      <div class="saved-section-header">
+        <h2 class="saved-section-title">Saved Products</h2>
+        <a href="recommendations.html" class="saved-browse-link">Browse all →</a>
+      </div>
+
+      <!-- Grid of saved product cards -->
+      <div class="saved-grid" id="savedGrid"></div>
+
+      <!-- Empty state -->
+      <div class="saved-empty hidden" id="savedEmpty">
+        <div class="saved-empty-icon">🔖</div>
+        <p class="saved-empty-title">No saved products yet</p>
+        <p class="saved-empty-sub">
+          Browse recommendations and hit the bookmark icon
+          on any product to save it here.
+        </p>
+        <a href="recommendations.html" class="auth-submit-btn"
+           style="display:inline-block;max-width:220px;text-align:center;text-decoration:none;padding:12px 24px">
+          Browse Recommendations
+        </a>
+      </div>
+    </section>
+
+    <!-- ── MY SUGGESTIONS ── -->
+    <section class="saved-section" style="margin-top:56px">
+      <div class="saved-section-header">
+        <h2 class="saved-section-title">My Suggestions</h2>
+        <a href="recommendations.html#suggest" class="saved-browse-link"
+           id="suggestNewLink">+ Suggest a product</a>
+      </div>
+
+      <!-- List of submitted suggestions -->
+      <div id="suggestionsList"></div>
+
+      <!-- Empty state -->
+      <div class="saved-empty hidden" id="suggestionsEmpty">
+        <div class="saved-empty-icon">✦</div>
+        <p class="saved-empty-title">No suggestions yet</p>
+        <p class="saved-empty-sub">
+          Know a great activewear piece for tropical conditions?
+          Suggest it and the Noir team might feature it.
+        </p>
+        <a href="recommendations.html" class="auth-submit-btn"
+           style="display:inline-block;max-width:220px;text-align:center;text-decoration:none;padding:12px 24px">
+          Go suggest a product
+        </a>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║  AUTH MODAL  (shared with recommendations.html)          ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+<div class="modal-overlay" id="authModal" role="dialog" aria-modal="true" aria-label="Sign in">
+  <div class="modal-box">
+    <button class="modal-close" id="authModalClose" aria-label="Close">×</button>
+    <div class="auth-logo-row">
+      <span class="logo-mark" style="width:24px;height:24px;font-size:13px">N</span>
+      <span class="logo-text" style="font-size:13px">NOIR</span>
+    </div>
+    <p class="auth-context-hint" id="authContextHint"></p>
+    <div class="auth-tab-row">
+      <button class="auth-tab active" data-tab="login">Sign In</button>
+      <button class="auth-tab"        data-tab="signup">Create Account</button>
+    </div>
+    <div class="auth-error" id="authError"></div>
+
+    <div class="auth-panel active" id="panelLogin">
+      <div class="form-group">
+        <label class="form-label" for="loginEmail">Email</label>
+        <input class="form-input" id="loginEmail" type="email"
+               placeholder="demo@noir.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="loginPassword">Password</label>
+        <input class="form-input" id="loginPassword" type="password"
+               placeholder="demo123" autocomplete="current-password" />
+      </div>
+      <button class="auth-submit-btn" id="loginBtn">Sign In</button>
+      <p class="auth-footer-text">No account?
+        <span class="auth-switch-link" data-tab="signup">Create one →</span>
+      </p>
+    </div>
+
+    <div class="auth-panel" id="panelSignup">
+      <div class="form-group">
+        <label class="form-label" for="signupName">Name</label>
+        <input class="form-input" id="signupName" type="text"
+               placeholder="Your name" autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="signupEmail">Email</label>
+        <input class="form-input" id="signupEmail" type="email"
+               placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="signupPassword">Password
+          <span style="opacity:.5;font-size:10px">(min 6 chars)</span>
+        </label>
+        <input class="form-input" id="signupPassword" type="password"
+               placeholder="••••••••" autocomplete="new-password" />
+      </div>
+      <button class="auth-submit-btn" id="signupBtn">Create Account</button>
+      <p class="auth-footer-text">Have an account?
+        <span class="auth-switch-link" data-tab="login">Sign in →</span>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="../js/main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-client.js"></script>
+<script src="../js/supabase-auth.js"></script>
+<script src="../js/supabase-engagement.js"></script>
+<script src="../js/products-data.js"></script>
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════
+   PAGE INIT — decide which view to show
+   ══════════════════════════════════════════════════════════ */
+async function initPage() {
+  // Wait for auth state to be known before deciding which view to show.
+  await (window.NoirAuth.ready || Promise.resolve());
+
+  if (window.NoirAuth.isAuthenticated()) {
+    await showUserContent();
+  } else {
+    showAuthWall();
+  }
+  updateNavAuth();
+}
+
+function showAuthWall() {
+  document.getElementById('authWall').classList.remove('hidden');
+  document.getElementById('mainContent').classList.add('hidden');
+}
+
+async function showUserContent() {
+  document.getElementById('authWall').classList.add('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+
+  const user = window.NoirAuth.getUser();
+  document.getElementById('savedPageSub').textContent =
+    `${user.name.split(' ')[0]}'s saved products and suggestions.`;
+
+  await renderSaved();
+  await renderSuggestions();
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   NAV AUTH ZONE
+   ══════════════════════════════════════════════════════════ */
+function updateNavAuth() {
+  const user = window.NoirAuth.getUser();
+  const zone = document.getElementById('navAuthZone');
+
+  if (user) {
+    zone.innerHTML = `
+      <div class="nav-user-wrap">
+        <a href="saved.html" class="nav-saved-link" title="My saved products"
+           style="border-color:var(--accent);color:var(--accent)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          Saved
+        </a>
+        <div class="nav-user-chip">
+          <span class="user-avatar">${user.avatar}</span>
+          <span class="user-name">${user.name.split(' ')[0]}</span>
+        </div>
+        <button class="nav-signout-btn" id="signOutBtn">Sign out</button>
+      </div>`;
+    document.getElementById('signOutBtn').addEventListener('click', async () => {
+      await window.NoirAuth.logout();
+    });
+  } else {
+    zone.innerHTML = `<button class="nav-login-btn" id="navLoginBtn">Sign in</button>`;
+    document.getElementById('navLoginBtn').addEventListener('click', () => openAuthModal());
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   RENDER SAVED PRODUCTS
+   ══════════════════════════════════════════════════════════ */
+async function renderSaved() {
+  const grid  = document.getElementById('savedGrid');
+  const empty = document.getElementById('savedEmpty');
+
+  grid.innerHTML = `<p class="rec-loading">Loading saved products…</p>`;
+
+  const savedIds = await window.NoirEngage.getSavedIds();
+
+  /* Filter NOIR_PRODUCTS to only saved ones, preserve save order */
+  const saved = savedIds
+    .map(id => window.NOIR_PRODUCTS.find(p => p.id === id))
+    .filter(Boolean);
+
+  if (saved.length === 0) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  const cardsHTML = await Promise.all(saved.map(buildSavedCard));
+  grid.innerHTML = cardsHTML.join('');
+}
+
+async function buildSavedCard(p) {
+  const loveData = await window.NoirEngage.getLoveState(p.id);
+  const cuBadge  = p.curation === 'noir'
+    ? `<span class="curation-badge badge-noir">✦ Curated by Noir</span>` : '';
+  const commBadge = loveData.isCommunityPick
+    ? `<span class="curation-badge badge-community badge-community-earned"
+             style="top:${p.curation ? 36 : 10}px">◈ Community Pick</span>` : '';
+
+  return `
+    <div class="saved-card" id="saved-card-${p.id}" data-product-id="${p.id}">
+      <div class="saved-card-img" style="position:relative">
+        ${cuBadge}${commBadge}
+        <span style="font-size:36px;line-height:1">${p.icon}</span>
+      </div>
+      <div class="saved-card-body">
+        <div class="rec-card-type">${p.type}</div>
+        <div class="rec-card-name">${p.name}</div>
+        <div class="rec-card-spec">${p.spec}</div>
+        <p class="rec-card-desc" style="font-size:12px">${p.desc}</p>
+        <div class="saved-card-footer">
+          <a href="recommendations.html" class="saved-view-link">View in Recommendations →</a>
+          <button class="saved-unsave-btn" onclick="handleUnsave('${p.id}')">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"
+                 stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>`;
+}
+
+async function handleUnsave(productId) {
+  const card = document.getElementById(`saved-card-${productId}`);
+
+  // Disable interactions on this card while the request is in flight
+  if (card) card.style.pointerEvents = 'none';
+
+  try {
+    await window.NoirEngage.toggleSave(productId);   // toggles back to unsaved
+  } catch (err) {
+    console.error('toggleSave failed:', err.message);
+    if (card) card.style.pointerEvents = '';
+    return;
+  }
+
+  /* Animate card out */
+  if (card) {
+    card.style.transition = 'opacity 0.3s, transform 0.3s';
+    card.style.opacity    = '0';
+    card.style.transform  = 'scale(0.95)';
+    setTimeout(() => {
+      card.remove();
+      /* Check if grid is now empty */
+      if (document.getElementById('savedGrid').children.length === 0) {
+        document.getElementById('savedEmpty').classList.remove('hidden');
+      }
+    }, 320);
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   RENDER SUGGESTIONS
+   ══════════════════════════════════════════════════════════ */
+
+/* Status badge colours — easy to extend when real statuses arrive */
+const STATUS_STYLES = {
+  pending:  { label: 'Pending review', bg: 'rgba(255,119,4,0.10)',  color: 'var(--accent)',  border: 'rgba(255,119,4,0.25)'  },
+  approved: { label: 'Approved ✓',     bg: 'rgba(255,255,255,0.06)', color: 'var(--text)',   border: 'var(--border)'          },
+  rejected: { label: 'Not selected',   bg: 'rgba(210,50,70,0.08)',  color: '#d03248',        border: 'rgba(210,50,70,0.25)'   },
+};
+
+async function renderSuggestions() {
+  const list  = document.getElementById('suggestionsList');
+  const empty = document.getElementById('suggestionsEmpty');
+
+  list.innerHTML = `<p class="rec-loading">Loading suggestions…</p>`;
+
+  const submissions = await window.NoirEngage.getMySubmissions();
+
+  if (submissions.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  list.innerHTML = `<div class="suggestions-list">${submissions.map(buildSuggestionRow).join('')}</div>`;
+}
+
+function buildSuggestionRow(s) {
+  const st   = STATUS_STYLES[s.status] || STATUS_STYLES.pending;
+  const date = new Date(s.submittedAt).toLocaleDateString('en-MY', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  });
+
+  /* Thumbnail — shown only if the user attached a photo */
+  const thumb = s.imageData
+    ? `<img class="suggestion-row-thumb" src="${s.imageData}" alt="${s.name}" />`
+    : `<div class="suggestion-row-thumb suggestion-row-thumb-empty">📦</div>`;
+
+  /* Shop link — shown only if provided */
+  const shopLink = s.shopUrl
+    ? `<a class="suggestion-row-shop-link" href="${s.shopUrl}" target="_blank" rel="noopener noreferrer">
+         Visit shop ↗
+       </a>`
+    : '';
+
+  return `
+    <div class="suggestion-row">
+      ${thumb}
+      <div class="suggestion-row-main">
+        <div class="suggestion-row-name">${s.name}</div>
+        <div class="suggestion-row-brand">${s.brand}
+          ${s.material ? `<span class="suggestion-row-material">· ${s.material}</span>` : ''}
+        </div>
+        <div class="suggestion-row-reason">${s.reason}</div>
+        ${shopLink}
+      </div>
+      <div class="suggestion-row-meta">
+        <span class="suggestion-status-badge"
+              style="background:${st.bg};color:${st.color};border-color:${st.border}">
+          ${st.label}
+        </span>
+        <span class="suggestion-row-date">${date}</span>
+        <span class="suggestion-row-category">${s.category}</span>
+      </div>
+    </div>`;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   AUTH MODAL
+   ══════════════════════════════════════════════════════════ */
+const authModal = document.getElementById('authModal');
+
+function openAuthModal(defaultTab = 'login') {
+  switchAuthTab(defaultTab);
+  clearError();
+  const hint = document.getElementById('authContextHint');
+  hint.textContent = '';
+  hint.classList.remove('visible');
+  authModal.classList.add('open');
+  setTimeout(() => authModal.querySelector('.auth-panel.active .form-input')?.focus(), 60);
+}
+function closeAuthModal() {
+  authModal.classList.remove('open');
+  clearError();
+}
+function switchAuthTab(name) {
+  document.querySelectorAll('.auth-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.auth-panel').forEach(p =>
+    p.classList.toggle('active',
+      p.id === `panel${name.charAt(0).toUpperCase()}${name.slice(1)}`));
+  clearError();
+}
+function showError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+function clearError() {
+  const el = document.getElementById('authError');
+  el.textContent = '';
+  el.classList.remove('visible');
+}
+function setBtnLoading(btn, loading) {
+  btn.disabled    = loading;
+  btn.textContent = loading ? 'Please wait…' : btn.dataset.label;
+}
+
+document.getElementById('authModalClose').addEventListener('click', closeAuthModal);
+authModal.addEventListener('click', e => { if (e.target === authModal) closeAuthModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAuthModal(); });
+document.querySelectorAll('.auth-tab, .auth-switch-link').forEach(el =>
+  el.addEventListener('click', () => switchAuthTab(el.dataset.tab)));
+
+document.getElementById('wallSignInBtn').addEventListener('click', () => openAuthModal('login'));
+document.getElementById('wallSignUpBtn').addEventListener('click', () => openAuthModal('signup'));
+
+const loginBtn  = document.getElementById('loginBtn');
+const signupBtn = document.getElementById('signupBtn');
+loginBtn.dataset.label  = 'Sign In';
+signupBtn.dataset.label = 'Create Account';
+
+loginBtn.addEventListener('click', async () => {
+  clearError();
+  setBtnLoading(loginBtn, true);
+  try {
+    await window.NoirAuth.login(
+      document.getElementById('loginEmail').value.trim(),
+      document.getElementById('loginPassword').value
+    );
+    closeAuthModal();
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    setBtnLoading(loginBtn, false);
+  }
+});
+
+signupBtn.addEventListener('click', async () => {
+  clearError();
+  setBtnLoading(signupBtn, true);
+  try {
+    await window.NoirAuth.signup(
+      document.getElementById('signupName').value.trim(),
+      document.getElementById('signupEmail').value.trim(),
+      document.getElementById('signupPassword').value
+    );
+    closeAuthModal();
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    setBtnLoading(signupBtn, false);
+  }
+});
+
+authModal.addEventListener('keydown', e => {
+  if (e.key === 'Enter')
+    authModal.querySelector('.auth-panel.active .auth-submit-btn')?.click();
+});
+
+/* Re-render page content after sign-in */
+document.addEventListener('noir:auth:login',  async () => { updateNavAuth(); await showUserContent(); });
+document.addEventListener('noir:auth:signup', async () => { updateNavAuth(); await showUserContent(); });
+document.addEventListener('noir:auth:logout', () => { updateNavAuth(); showAuthWall(); });
+
+/* ── Init ───────────────────────────────────────────────── */
+initPage();
+</script>
+</body>
+</html>

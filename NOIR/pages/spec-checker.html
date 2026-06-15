@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spec Checker — Noir</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="noise-overlay" aria-hidden="true"></div>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="../index.html" class="nav-logo">
+        <span class="logo-mark">N</span>
+        <span class="logo-text">NOIR</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="learning-hub.html"    class="nav-link"><span class="nav-num">01</span> Learning Hub</a></li>
+        <li><a href="material-guide.html"  class="nav-link"><span class="nav-num">02</span> Material Guide</a></li>
+        <li><a href="spec-checker.html"    class="nav-link"><span class="nav-num">03</span> Spec Checker</a></li>
+        <li><a href="quiz.html"            class="nav-link"><span class="nav-num">04</span> Quiz</a></li>
+        <li><a href="recommendations.html" class="nav-cta">Recommendations →</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="page-shell">
+    <div class="page-hero">
+      <p class="page-hero-tag">Module 03</p>
+      <h1 class="page-title">Spec <em>Checker</em></h1>
+      <p class="page-subtitle">
+        Enter the fabric composition from your garment's care label.
+        Get an instant breakdown of its performance properties.
+      </p>
+    </div>
+
+    <div class="page-body">
+      <div class="spec-tool">
+        <h2>Decode your garment</h2>
+        <p>Add each fabric in your garment and enter its percentage (they should add up to 100%).</p>
+
+        <div id="fabricRows">
+          <!-- Rows injected by JS -->
+        </div>
+
+        <div class="spec-actions">
+          <button class="btn-add" id="addRowBtn">+ Add fabric</button>
+          <button class="btn-check" id="checkBtn">Analyse →</button>
+        </div>
+
+        <!-- Results -->
+        <div class="spec-results" id="specResults">
+          <div class="result-header">Performance Analysis</div>
+          <div id="resultItems"></div>
+          <div id="tropicalVerdict" style="margin-top:20px; padding:16px; border-radius:8px; font-size:14px; line-height:1.6;"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="../js/main.js"></script>
+  <script>
+    /* ── Fabric property database ── */
+    const fabricDB = {
+      'polyester':  { breathability: 68, wicking: 92, odor: 45, stretch: 20, tropical: 75 },
+      'nylon':      { breathability: 70, wicking: 80, odor: 50, stretch: 25, tropical: 78 },
+      'spandex':    { breathability: 55, wicking: 60, odor: 40, stretch: 100, tropical: 60 },
+      'elastane':   { breathability: 55, wicking: 60, odor: 40, stretch: 100, tropical: 60 },
+      'bamboo':     { breathability: 88, wicking: 78, odor: 82, stretch: 15, tropical: 88 },
+      'merino':     { breathability: 85, wicking: 72, odor: 95, stretch: 30, tropical: 50 },
+      'wool':       { breathability: 80, wicking: 65, odor: 88, stretch: 20, tropical: 45 },
+      'modal':      { breathability: 84, wicking: 70, odor: 65, stretch: 18, tropical: 80 },
+      'tencel':     { breathability: 82, wicking: 76, odor: 70, stretch: 12, tropical: 82 },
+      'lyocell':    { breathability: 82, wicking: 76, odor: 70, stretch: 12, tropical: 82 },
+      'cotton':     { breathability: 72, wicking: 25, odor: 48, stretch: 8,  tropical: 35 },
+      'recycled':   { breathability: 66, wicking: 88, odor: 42, stretch: 18, tropical: 73 },
+    };
+
+    const propertyLabels = {
+      breathability: 'Breathability',
+      wicking:       'Moisture-Wicking',
+      odor:          'Odor Resistance',
+      stretch:       'Natural Stretch',
+      tropical:      'Tropical Suitability',
+    };
+
+    /* ── Row management ── */
+    let rowCount = 0;
+
+    function createRow(fabric = '', pct = '') {
+      rowCount++;
+      const id = rowCount;
+      const row = document.createElement('div');
+      row.className = 'fabric-row';
+      row.dataset.id = id;
+      row.innerHTML = `
+        <input class="spec-input fabric-name"
+               type="text"
+               placeholder="e.g. Polyester"
+               value="${fabric}"
+               list="fabricSuggestions" />
+        <input class="pct-input fabric-pct"
+               type="number"
+               min="1" max="100"
+               placeholder="%"
+               value="${pct}" />
+        <button class="remove-btn" title="Remove" onclick="removeRow(${id})">×</button>
+      `;
+      document.getElementById('fabricRows').appendChild(row);
+    }
+
+    function removeRow(id) {
+      const rows = document.querySelectorAll('.fabric-row');
+      if (rows.length <= 1) return; // always keep at least one
+      document.querySelector(`.fabric-row[data-id="${id}"]`)?.remove();
+    }
+
+    /* ── Datalist for autocomplete ── */
+    const dl = document.createElement('datalist');
+    dl.id = 'fabricSuggestions';
+    ['Polyester','Nylon','Spandex','Elastane','Bamboo','Cotton','Merino Wool','Modal','Tencel','Lyocell','Recycled PET'].forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f;
+      dl.appendChild(opt);
+    });
+    document.body.appendChild(dl);
+
+    /* ── Initialise with 2 rows ── */
+    createRow('Polyester', 88);
+    createRow('Spandex', 12);
+
+    document.getElementById('addRowBtn').addEventListener('click', () => createRow());
+
+    /* ── Analyse ── */
+    document.getElementById('checkBtn').addEventListener('click', () => {
+      const rows = document.querySelectorAll('.fabric-row');
+      let totalPct = 0;
+      const blends = [];
+
+      rows.forEach(row => {
+        const nameRaw = row.querySelector('.fabric-name').value.trim().toLowerCase();
+        const pct     = parseFloat(row.querySelector('.fabric-pct').value) || 0;
+        totalPct += pct;
+
+        // fuzzy match against DB
+        const key = Object.keys(fabricDB).find(k => nameRaw.includes(k)) || null;
+        if (key && pct > 0) {
+          blends.push({ key, pct });
+        }
+      });
+
+      if (blends.length === 0) {
+        alert('Please enter at least one recognised fabric name.');
+        return;
+      }
+
+      // Weighted average of each property
+      const totals = { breathability: 0, wicking: 0, odor: 0, stretch: 0, tropical: 0 };
+      let weightSum = 0;
+
+      blends.forEach(({ key, pct }) => {
+        const props = fabricDB[key];
+        Object.keys(totals).forEach(p => {
+          totals[p] += props[p] * pct;
+        });
+        weightSum += pct;
+      });
+
+      Object.keys(totals).forEach(p => {
+        totals[p] = Math.round(totals[p] / weightSum);
+      });
+
+      // Render result bars
+      const itemsEl = document.getElementById('resultItems');
+      itemsEl.innerHTML = Object.entries(totals).map(([key, val]) => `
+        <div class="result-item" style="margin-bottom:14px">
+          <span class="result-label">${propertyLabels[key]}</span>
+          <div class="result-bar-wrap">
+            <div class="result-bar" style="width:${val}%"></div>
+          </div>
+          <span class="result-val">${val}/100</span>
+        </div>
+      `).join('');
+
+      // Tropical verdict
+      const verdictEl = document.getElementById('tropicalVerdict');
+      const t = totals.tropical;
+      let verdict, bg, color;
+
+      if (t >= 80) {
+        verdict = `✅ Excellent tropical suitability (${t}/100). This blend should perform well in hot, humid outdoor conditions.`;
+        bg = 'rgba(24, 135, 199, 0.10)'; color = 'var(--good)';
+      } else if (t >= 60) {
+        verdict = `⚠️ Moderate tropical suitability (${t}/100). Acceptable for low-intensity activities, but may feel warm under direct sun.`;
+        bg = 'rgba(255, 140, 66, 0.08)'; color = 'var(--warn)';
+      } else {
+        verdict = `❌ Low tropical suitability (${t}/100). This blend may trap heat and moisture in humid conditions — consider a different fabric.`;
+        bg = 'rgba(255, 77, 109, 0.08)'; color = 'var(--bad)';
+      }
+
+      verdictEl.style.cssText = `background:${bg}; border:1px solid ${color}; border-radius:8px; padding:16px; color:${color}`;
+      verdictEl.textContent = verdict;
+
+      // Show results
+      document.getElementById('specResults').classList.add('visible');
+      document.getElementById('specResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  </script>
+</body>
+</html>
