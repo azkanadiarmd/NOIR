@@ -1873,8 +1873,10 @@ ul { list-style: none; }
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  /* Center the box with margin:auto (below) instead of align/justify so that
+     when the box is taller than the viewport the overlay can scroll to the top
+     — align-items:center would clip the top and make it unreachable. */
+  overflow-y: auto;
   padding: 20px;
   opacity: 0;
   pointer-events: none;
@@ -1892,6 +1894,7 @@ ul { list-style: none; }
   padding: 36px;
   width: 100%;
   max-width: 420px;
+  margin: auto;          /* centers when it fits; lets overlay scroll when taller */
   position: relative;
   transform: translateY(20px) scale(0.98);
   transition: transform var(--t-mid) var(--ease);
