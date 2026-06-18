@@ -200,6 +200,9 @@ async function initPage() {
   // Wait for auth state to be known before deciding which view to show.
   await (window.NoirAuth.ready || Promise.resolve());
 
+  // Load the live catalogue so saved products resolve by id.
+  await (window.NOIR_DATA_READY || Promise.resolve());
+
   if (window.NoirAuth.isAuthenticated()) {
     await showUserContent();
   } else {
@@ -299,7 +302,7 @@ async function buildSavedCard(p) {
     <div class="saved-card" id="saved-card-${p.id}" data-product-id="${p.id}">
       <div class="saved-card-img" style="position:relative">
         ${cuBadge}${commBadge}
-        <span style="font-size:36px;line-height:1">${p.icon}</span>
+        ${window.noirIconMarkup(p, 36)}
       </div>
       <div class="saved-card-body">
         <div class="rec-card-type">${p.type}</div>
