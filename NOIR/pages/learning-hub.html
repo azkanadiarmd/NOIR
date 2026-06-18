@@ -44,8 +44,9 @@
 
     <div class="page-body">
 
-      <!-- Lesson List -->
-      <div class="lesson-list">
+      <!-- Lesson List (filled from the DB by lessons-loader.js;
+           the items below are the fallback if the DB is unavailable) -->
+      <div class="lesson-list" id="lessonList">
 
         <div class="lesson-item">
           <div class="lesson-num">01</div>
@@ -129,6 +130,9 @@
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/lessons-loader.js"></script>
   <script src="../js/main.js"></script>
 </body>
 </html>
