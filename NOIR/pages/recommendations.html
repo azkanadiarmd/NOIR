@@ -770,7 +770,25 @@ function refreshCommunityBadge(card, isCommunityPick) {
 /* ══════════════════════════════════════════════════════════
    RENDER
    ══════════════════════════════════════════════════════════ */
+
+/* Image-only renderer (no emoji). Defined inline so card rendering
+   never depends on an external script loading first. */
+function escAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+function productImage(item) {
+  const url = item && item.image_url ? escAttr(item.image_url) : '';
+  if (!url) return '<span class="card-img-empty">No image</span>';
+  return `<img src="${url}" alt="${escAttr(item.name || '')}" loading="lazy"
+          style="width:100%;height:100%;object-fit:cover;display:block"
+          onerror="this.replaceWith(Object.assign(document.createElement('span'),
+                   {className:'card-img-empty',textContent:'Image not found'}))">`;
+}
+
 async function buildCardHTML(p) {
+  try {
   const loveData = await window.NoirEngage.getLoveState(p.id);
   const saveData = await window.NoirEngage.getSaveState(p.id);
   const authed   = window.NoirAuth.isAuthenticated();
@@ -797,7 +815,7 @@ async function buildCardHTML(p) {
       <div class="rec-card-img" style="position:relative">
         ${curatorBadgeHTML(p.curation)}
         ${communityBadgeHTML(loveData.isCommunityPick, !!p.curation)}
-        ${window.noirIconMarkup(p, 40)}
+        ${productImage(p)}
       </div>
       <div class="rec-card-body">
         <div class="rec-card-type">${p.type}</div>
@@ -807,6 +825,20 @@ async function buildCardHTML(p) {
         <div class="rec-card-footer">${footer}</div>
       </div>
     </div>`;
+  } catch (err) {
+    // Never let one card freeze the whole grid on "Loading…".
+    console.error('[buildCardHTML] failed for', p && p.id, err);
+    return `
+      <div class="rec-card" data-product-id="${p && p.id}">
+        <div class="rec-card-img" style="position:relative">${productImage(p)}</div>
+        <div class="rec-card-body">
+          <div class="rec-card-type">${escAttr(p && p.type)}</div>
+          <div class="rec-card-name">${escAttr(p && p.name)}</div>
+          <div class="rec-card-spec">${escAttr(p && p.spec)}</div>
+          <p class="rec-card-desc">${escAttr(p && p.desc)}</p>
+        </div>
+      </div>`;
+  }
 }
 
 async function renderCards(filter) {
@@ -839,7 +871,7 @@ function renderSponsors() {
     <div class="sponsor-card">
       <div class="sponsor-card-img">
         <span class="sponsor-badge">Sponsored</span>
-        ${window.noirIconMarkup(s, 36)}
+        ${productImage(s)}
       </div>
       <div class="sponsor-card-body">
         <div class="sponsor-card-brand">${s.brand}</div>
