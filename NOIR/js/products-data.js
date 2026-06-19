@@ -23,7 +23,7 @@ window.NOIR_PRODUCTS = [
   {
     id: 'classic-poly-tee',
     icon: '🏃', type: 'Running Tee',
-    name: 'Classic Poly Performance Tee',
+    name: 'Classic Poly Performance Tee-A',
     spec: '88% Polyester / 12% Spandex',
     category: ['synthetic', 'running'],
     curation: 'noir',
