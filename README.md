@@ -1,7 +1,7 @@
 # NOIR — Activewear Intelligence Platform
 ### University Project · Educational Use Only
 
-🔗 **Live site:** [noir-activewear.vercel.app](https://your-noir-project.vercel.app) — *replace with your actual Vercel URL*
+🔗 **Live site:** [noir-activewear.vercel.app]
 
 NOIR is an educational web platform that teaches people how to choose activewear
 for a tropical climate — how fabrics breathe, wick sweat, resist odour, and stretch.
