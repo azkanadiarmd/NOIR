@@ -121,6 +121,11 @@ class NoirAdminService {
    ═══════════════════════════════════════════════════════════ */
 let Admin;
 
+/* When a product form is opened from a suggestion, we remember which
+ * suggestion so we can mark it approved once the product is saved. */
+let _suggestions = [];
+let _pendingSuggestionId = null;
+
 /* slugify a name into a stable text id for new products */
 function slugify(s) {
   return String(s).toLowerCase().trim()
@@ -241,6 +246,7 @@ async function loadSuggestions() {
   wrap.innerHTML = `<p class="admin-loading">Loading suggestions…</p>`;
   try {
     const rows = await Admin.listSuggestions(filter);
+    _suggestions = rows;
     if (!rows.length) {
       wrap.innerHTML = `<p class="admin-empty">No suggestions ${filter === 'all' ? 'yet' : `with status "${esc(filter)}"`}.</p>`;
       return;
@@ -273,9 +279,8 @@ function suggestionCard(s) {
         <div class="sug-meta">${esc(date)}</div>
       </div>
       <div class="sug-actions">
-        <button class="admin-btn ok"    data-act="approve">Approve</button>
+        <button class="admin-btn ok"    data-act="approve">Approve &amp; edit →</button>
         <button class="admin-btn ghost" data-act="reject">Reject</button>
-        <button class="admin-btn line"  data-act="toproduct">Use as product →</button>
       </div>
     </div>`;
 }
@@ -288,14 +293,15 @@ document.addEventListener('click', async (e) => {
   const id   = card.dataset.id;
   const act  = btn.dataset.act;
 
-  if (act === 'toproduct') {
-    prefillProductFromSuggestion(card);
+  if (act === 'approve') {
+    const s = _suggestions.find(x => String(x.id) === String(id));
+    if (s) openProductFromSuggestion(s);
     return;
   }
-  const status = act === 'approve' ? 'approved' : 'rejected';
+  // reject
   try {
-    await Admin.setSuggestionStatus(id, status);
-    toast(`Suggestion ${status}.`);
+    await Admin.setSuggestionStatus(id, 'rejected');
+    toast('Suggestion rejected.');
     loadSuggestions();
   } catch (err) {
     toast(err.message, 'err');
@@ -304,24 +310,23 @@ document.addEventListener('click', async (e) => {
 
 document.getElementById('suggestionFilter')?.addEventListener('change', loadSuggestions);
 
-/* Pull the suggestion's text out of the rendered card and drop it
- * into the product form, then jump to the Products tab. */
-function prefillProductFromSuggestion(card) {
-  const get = sel => card.querySelector(sel)?.textContent?.trim() || '';
-  const name = get('.sug-name');
+/* Open the product form pre-filled from a suggestion. The suggestion is
+ * marked "approved" automatically once the admin saves the product. */
+function openProductFromSuggestion(s) {
+  _pendingSuggestionId = s.id;
   document.querySelector('.admin-tab[data-tab="products"]').click();
   openProductForm({
-    id: slugify(name),
-    name,
-    type: get('.sug-brand').split('·')[0].trim(),
-    spec: '',
-    desc: get('.sug-reason'),
-    icon: '🆕',
-    category: '',
-    curation: '',
+    id:        slugify(s.name),
+    name:      s.name,
+    type:      s.brand || '',                       // editable
+    spec:      s.material || '',                    // fabric blend → spec
+    category:  s.category ? [s.category] : [],
+    curation:  '',
+    desc:      s.reason || '',
+    image_url: s.image_url || '',
     is_active: true,
   });
-  toast('Form pre-filled from suggestion — review and save.');
+  toast('Approved suggestion loaded — review, then Save to publish.');
 }
 
 
@@ -345,7 +350,7 @@ function productRow(p) {
   const cats = (p.category || []).map(esc).join(', ');
   const media = p.image_url
     ? `<img class="row-thumb" src="${esc(p.image_url)}" alt="" />`
-    : `<span class="row-icon">${esc(p.icon || '·')}</span>`;
+    : `<span class="row-thumb row-thumb-empty"></span>`;
   return `
     <div class="row-item" data-id="${esc(p.id)}">
       ${media}
@@ -373,7 +378,6 @@ function openProductForm(p = null) {
   document.getElementById('pfTitle').textContent = p ? (editing ? 'Edit product' : 'New product') : 'New product';
   document.getElementById('pfId').value       = p?.id ?? '';
   document.getElementById('pfId').disabled    = editing;          // id is the key — don't change on edit
-  document.getElementById('pfIcon').value     = p?.icon ?? '';
   document.getElementById('pfImage').value    = p?.image_url ?? '';
   document.getElementById('pfName').value     = p?.name ?? '';
   document.getElementById('pfType').value     = p?.type ?? '';
@@ -386,8 +390,8 @@ function openProductForm(p = null) {
   productForm.el().scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-document.getElementById('productAddBtn')?.addEventListener('click', () => openProductForm());
-document.getElementById('pfCancel')?.addEventListener('click', () => productForm.el().classList.add('hidden'));
+document.getElementById('productAddBtn')?.addEventListener('click', () => { _pendingSuggestionId = null; openProductForm(); });
+document.getElementById('pfCancel')?.addEventListener('click', () => { _pendingSuggestionId = null; productForm.el().classList.add('hidden'); });
 
 document.getElementById('pfSave')?.addEventListener('click', async () => {
   const name = document.getElementById('pfName').value.trim();
@@ -401,7 +405,6 @@ document.getElementById('pfSave')?.addEventListener('click', async () => {
 
   const payload = {
     id,
-    icon:        document.getElementById('pfIcon').value.trim() || null,
     image_url:   document.getElementById('pfImage').value.trim() || null,
     type:        document.getElementById('pfType').value.trim() || null,
     name,
@@ -414,7 +417,16 @@ document.getElementById('pfSave')?.addEventListener('click', async () => {
 
   try {
     await Admin.upsertProduct(payload);
-    toast('Product saved.');
+    // If this product came from a suggestion, mark that suggestion approved.
+    if (_pendingSuggestionId) {
+      try { await Admin.setSuggestionStatus(_pendingSuggestionId, 'approved'); }
+      catch (e) { console.warn('[admin] could not mark suggestion approved:', e.message); }
+      _pendingSuggestionId = null;
+      loadSuggestions();
+      toast('Published to recommendations & suggestion approved.');
+    } else {
+      toast('Product saved.');
+    }
     productForm.el().classList.add('hidden');
     loadProducts();
   } catch (err) {
@@ -431,6 +443,7 @@ document.getElementById('productList')?.addEventListener('click', async (e) => {
     catch (err) { toast(err.message, 'err'); }
   }
   if (btn.dataset.act === 'edit') {
+    _pendingSuggestionId = null;
     const rows = await Admin.listProducts();
     const p = rows.find(r => r.id === id);
     if (p) openProductForm({ ...p, _existing: true });
@@ -455,7 +468,7 @@ async function loadSponsors() {
 function sponsorRow(s) {
   const media = s.image_url
     ? `<img class="row-thumb" src="${esc(s.image_url)}" alt="" />`
-    : `<span class="row-icon">${esc(s.icon || '·')}</span>`;
+    : `<span class="row-thumb row-thumb-empty"></span>`;
   return `
     <div class="row-item" data-id="${esc(s.id)}">
       ${media}
@@ -473,7 +486,6 @@ function sponsorRow(s) {
 function openSponsorForm(s = null) {
   document.getElementById('sfTitle').textContent = s ? 'Edit sponsor' : 'New sponsor';
   document.getElementById('sfId').value     = s?.id ?? '';
-  document.getElementById('sfIcon').value   = s?.icon ?? '';
   document.getElementById('sfImage').value  = s?.image_url ?? '';
   document.getElementById('sfBrand').value  = s?.brand ?? '';
   document.getElementById('sfName').value   = s?.name ?? '';
@@ -493,7 +505,6 @@ document.getElementById('sfSave')?.addEventListener('click', async () => {
   if (!brand || !name) return toast('Brand and name are required.', 'err');
 
   const payload = {
-    icon:        document.getElementById('sfIcon').value.trim() || null,
     image_url:   document.getElementById('sfImage').value.trim() || null,
     brand, name,
     spec:        document.getElementById('sfSpec').value.trim() || null,
